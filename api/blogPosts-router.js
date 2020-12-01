@@ -41,10 +41,10 @@ router.get('/:id', (req, res) => {
     BlogPost.findById(id)
         .then(bPost => {
             //REVISIT - OVERLOOKING SOMETHING WITH THIS CONDITIONAL
-            if (!bPost) {
-                res.status(404).json({ message: "The post with the specified ID does not exist." })
-            } else {
+            if (bPost.length > 0) {
                 res.status(200).json(bPost);
+            } else {
+                res.status(404).json({ message: "The post with the specified ID does not exist." })
             } 
         })
         .catch(err => {
