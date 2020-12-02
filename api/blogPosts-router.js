@@ -46,7 +46,7 @@ router.post('/', (req, res) => {
         })
 });
 
-router.post('/:id/comments', (req, res) => {
+router.post('/:id/comments', async (req, res) => {
     const comment = {
         post_id: req.params.id,
         text: req.body.text
@@ -55,13 +55,24 @@ router.post('/:id/comments', (req, res) => {
     if (!comment.text) {
         res.status(400).json({ errorMessage: "Please provide text for the comment." })
     } else { 
-        BlogPost.insertComment(comment)
-            .then(returnedId => {
-                res.status(200).json(returnedId)
-            })
-            .catch(err => {
-                res.status(500).json({ error: "There was an error while saving the comment to the database" })
-            })
+        try { 
+            const targetPost = await BlogPost.findById(comment.post_id); 
+            if (targetPost.length === 0) { 
+                res.status(404).json({ message: "The post with the specified ID does not exist." });
+                return
+            }
+            const returnedId = await BlogPost.insertComment(comment); 
+            res.status(200).json({ addedComment: comment, commentId: returnedId }); 
+        } catch (error) { 
+            res.status(500).json({ error: "There was an error while saving the comment to the database" })
+        }
+        // BlogPost.insertComment(comment)
+        //     .then(returnedId => {
+        //         res.status(200).json(returnedId)
+        //     })
+        //     .catch(err => {
+        //         res.status(500).json({ error: "There was an error while saving the comment to the database" })
+        //     })
     }
 
 });
@@ -144,17 +155,7 @@ router.delete('/:id', async (req, res) => {
         console.log(err.message);
     }
 })
-    //Ugly shit with promises 
-// router.delete('/:id', (req, res) => {
-//     const postId = req.params.id; 
-//     BlogPost.remove(postId)
-//         .then(delPost => {
-//             res.status(200).json(delPost);
-//         })
-//         .catch(err => {
-//             res.status(500).json( {error: "The post could not be removed"} );
-//         })
-// });
+
 
 // PUT IT THERERERSA
 
