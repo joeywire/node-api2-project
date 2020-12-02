@@ -19,9 +19,25 @@ router.post('/', (req, res) => {
         })
 });
 
-// router.post('/:id/comments', (req, res) => {
+router.post('/:id/comments', (req, res) => {
+    const comment = {
+        post_id: req.params.id,
+        text: req.body.text
+    }; 
 
-// })
+    if (!comment.text) {
+        res.status(400).json({ errorMessage: "Please provide text for the comment." })
+    } else { 
+        BlogPost.insertComment(comment)
+            .then(returnedId => {
+                res.status(200).json(returnedId)
+            })
+            .catch(err => {
+                res.status(500).json({ error: "There was an error while saving the comment to the database" })
+            })
+    }
+
+});
 
 
 // ALL YOUR GETS
@@ -56,20 +72,20 @@ router.get(`/:id/comments`, (req, res) => {
     const postId = req.params.id;
     let idCheck = false; 
 
-    BlogPost.find()
-        .then(posts => {
-            posts.forEach(post => {
-                if (post.id === postId) {
-                    idCheck = !idCheck; 
-                } 
-            }) 
-        })
-        .catch(err => console.log(err));
+    // BlogPost.find()
+    //     .then(posts => {
+    //         posts.forEach(post => {
+    //             if (post.id === postId) {
+    //                 idCheck = !idCheck; 
+    //             } 
+    //         }) 
+    //     })
+    //     .catch(err => console.log(err));
     
-    if (!idCheck) { 
-        res.status(404).json({ message: "The post with the specified ID does not exist." });
-        return
-    }
+    // if (!idCheck) { 
+    //     res.status(404).json({ message: "The post with the specified ID does not exist." });
+    //     return
+    // }
 
     BlogPost.findPostComments(postId)
         .then(comment => {
@@ -78,6 +94,19 @@ router.get(`/:id/comments`, (req, res) => {
         .catch(err => {
             res.status(500).json({ error: "The comments information could not be retrieved." })
         });
+});
+
+//DELET ME
+
+router.delete('/:id', (req, res) => {
+    const postId = req.params.id; 
+    BlogPost.remove(postId)
+        .then(delPost => {
+            res.status(200).json(delPost);
+        })
+        .catch(err => {
+            res.status(500).json( {error: "The post could not be removed"} );
+        })
 });
 
 module.exports = router; 
