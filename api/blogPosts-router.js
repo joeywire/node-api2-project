@@ -1,10 +1,37 @@
+/* 
+To Do: 
+- Refactor 3 w/ async await and fully flushed out error handling 
+
+- Comment server.js and index.js
+
+- This is the good stuff my dude
+*/
+
+
+
+
+
 const express = require('express');
 //Import our helper functions to access DB
 const BlogPost = require('../data/db'); 
 
 const router = express.Router();
 
-//POST REQUESTS 
+// POST REQUESTS 
+router.post('/', async (req, res) => {
+    if (!req.body.title || !req.body.contents) { 
+        res.status(400).json({ errorMessage: "Please provide title and contents for the post." });
+        return;
+    }
+    try { 
+        const newPostId = await BlogPost.insert(req.body); 
+        res.status(201).json(newPostId); 
+    } catch (error) {
+        res.status(500).json( {errorMessage: error.message});
+    }
+
+})
+    // Promise Version
 router.post('/', (req, res) => {
     //conditional logic to ensure req has necessary info
     if (!req.body.title || !req.body.contents) { 
@@ -41,6 +68,16 @@ router.post('/:id/comments', (req, res) => {
 
 
 // ALL YOUR GETS
+
+router.get('/', async (req, res) => {
+    try { 
+        const allPosts = await BlogPost.find(); 
+        res.status(200).json(allPosts); 
+    } catch (error) {
+        res.status(500).json({ errorMessage: error.message })
+    }
+})
+    // Promise Version
 router.get('/', (req, res) => {
     BlogPost.find()
         .then(bPosts => {
@@ -96,8 +133,7 @@ router.get(`/:id/comments`, (req, res) => {
         });
 });
 
-//DELET ME
-
+//DELETE ME
 router.delete('/:id', (req, res) => {
     const postId = req.params.id; 
     BlogPost.remove(postId)
@@ -106,6 +142,21 @@ router.delete('/:id', (req, res) => {
         })
         .catch(err => {
             res.status(500).json( {error: "The post could not be removed"} );
+        })
+});
+
+// PUT IT THERERERSA
+
+router.put('/:id', (req, res) => {
+    const { postId } = req.params; 
+    const changes = req.body; 
+
+    BlogPost.update(postId, changes)
+        .then(returnedNum => {
+            res.status(200).json(returnedNum); 
+        })
+        .catch(err => {
+            res.status(500).json({ errorMessage: err.message});
         })
 });
 
