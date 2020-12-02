@@ -134,16 +134,27 @@ router.get(`/:id/comments`, (req, res) => {
 });
 
 //DELETE ME
-router.delete('/:id', (req, res) => {
+router.delete('/:id', async (req, res) => {
     const postId = req.params.id; 
-    BlogPost.remove(postId)
-        .then(delPost => {
-            res.status(200).json(delPost);
-        })
-        .catch(err => {
-            res.status(500).json( {error: "The post could not be removed"} );
-        })
-});
+    try { 
+        const delPost = await BlogPost.remove(postId);
+        res.status(200).json(delPost); 
+    } catch (err) {
+        res.status(500).json({ error: "The post could not be removed" });
+        console.log(err.message);
+    }
+})
+    //Ugly shit with promises 
+// router.delete('/:id', (req, res) => {
+//     const postId = req.params.id; 
+//     BlogPost.remove(postId)
+//         .then(delPost => {
+//             res.status(200).json(delPost);
+//         })
+//         .catch(err => {
+//             res.status(500).json( {error: "The post could not be removed"} );
+//         })
+// });
 
 // PUT IT THERERERSA
 
